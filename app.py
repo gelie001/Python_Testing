@@ -22,13 +22,26 @@ clubs = loadClubs()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    error_message = request.args.get('error_message', '')  # Récupérer le message d'erreur de l'URL
+    return render_template('index.html', error_message=error_message)
 
-@app.route('/showSummary',methods=['POST'])
+@app.route('/showSummary', methods=['POST'])
+
 def showSummary():
-    club = [club for club in clubs if club['email'] == request.form['email']][0]
-    return render_template('welcome.html',club=club,competitions=competitions)
+    user_email = request.form.get('email')
 
+    # Vérifier si l'e-mail est dans le JSON
+    if not user_email or not any(club['email'] == user_email for club in clubs):
+        # Rediriger vers la page d'index avec un message d'erreur
+        error_message = "L'e-mail n'est pas valide."  # Message d'erreur à afficher
+        return redirect(url_for('index', error_message=error_message))
+
+    # L'e-mail est valide, poursuivre avec la logique existante
+    club = next(club for club in clubs if club['email'] == user_email)
+    return render_template('welcome.html', club=club, competitions=competitions)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 @app.route('/book/<competition>/<club>')
 def book(competition,club):

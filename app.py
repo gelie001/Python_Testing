@@ -22,26 +22,26 @@ clubs = loadClubs()
 
 @app.route('/')
 def index():
-    error_message = request.args.get('error_message', '')  # Récupérer le message d'erreur de l'URL
-    return render_template('index.html', error_message=error_message)
+    return render_template('index.html')
+
+from flask import render_template, flash, redirect, url_for
+
+from flask import flash
 
 @app.route('/showSummary', methods=['POST'])
-
 def showSummary():
-    user_email = request.form.get('email')
-
-    # Vérifier si l'e-mail est dans le JSON
-    if not user_email or not any(club['email'] == user_email for club in clubs):
-        # Rediriger vers la page d'index avec un message d'erreur
-        error_message = "L'e-mail n'est pas valide."  # Message d'erreur à afficher
-        return redirect(url_for('index', error_message=error_message))
-
-    # L'e-mail est valide, poursuivre avec la logique existante
-    club = next(club for club in clubs if club['email'] == user_email)
+    email = request.form.get('email')
+    if not email:
+        flash('Veuillez entrer votre adresse mail!', 'error')
+        return redirect(url_for('index'))
+    matching_clubs = [club for club in clubs if club['email'] == email]
+    if not matching_clubs:
+        flash('Aucun club trouvé avec cette adresse e-mail.', 'error')
+        return redirect(url_for('index'))
+    club = matching_clubs[0]
     return render_template('welcome.html', club=club, competitions=competitions)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
 
 @app.route('/book/<competition>/<club>')
 def book(competition,club):
@@ -54,12 +54,28 @@ def book(competition,club):
         return render_template('welcome.html', club=club, competitions=competitions)
 
 
-@app.route('/purchasePlaces',methods=['POST'])
+from flask import redirect, url_for, flash
+
+
+@app.route('/purchasePlaces', methods=['POST'])
 def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     placesRequired = int(request.form['places'])
-    competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-placesRequired
+
+    # Vérification du nombre de points
+    if int(club['points']) < placesRequired:
+        flash('Point insuffisant!')
+        return render_template('welcome.html', club=club, competitions=competitions)
+
+    # Vérification du nombre de places disponibles
+    if int(competition['numberOfPlaces']) < placesRequired:
+        flash('Nombre de places insuffisant!')
+        return render_template('welcome.html', club=club, competitions=competitions)
+
+    # Calcul pour que le nombre de points et les places diminuent en fonction du nombre de places réservées
+    competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
+    club['points'] = int(club['points']) - placesRequired
     flash('Great-booking complete!')
     return render_template('welcome.html', club=club, competitions=competitions)
 

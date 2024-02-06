@@ -22,7 +22,8 @@ clubs = loadClubs()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', clubs=clubs, competitions=competitions)
+
 
 from flask import render_template, flash, redirect, url_for
 

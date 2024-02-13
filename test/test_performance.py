@@ -9,7 +9,7 @@ class WebsiteUser(HttpUser):
 
     @task
     def load_showSummary(self):
-        self.client.post("/showSummary", {"email": "john@simplylift.co"})
+        self.client.post("/showSummary", json={"email": "john@simplylift.co"})
 
     @task
     def load_book(self):
@@ -17,4 +17,4 @@ class WebsiteUser(HttpUser):
 
     @task
     def load_purchasePlaces(self):
-        self.client.post("/purchasePlaces", {"competition": "Spring Festival", "club": "Simply Lift", "places": "1"})
+        self.client.post("/purchasePlaces", json={"competition": "Spring Festival", "club": "Simply Lift", "places": "1"})

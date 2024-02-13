@@ -32,3 +32,23 @@ def test_book_invalid(client: FlaskClient):
     response = client.get('/book/CompetitionC/ClubB')
     assert response.status_code == 200
     assert b"Something went wrong" in response.data
+
+def test_book_invalid_club(client: FlaskClient):
+    response = client.get('/book/CompetitionA/ClubC')
+    assert response.status_code == 200
+    assert b"Something went wrong" in response.data
+
+def test_book_invalid_competition(client: FlaskClient):
+    response = client.get('/book/CompetitionC/ClubA')
+    assert response.status_code == 200
+    assert b"Something went wrong" in response.data
+
+def test_book_missing_parameters(client: FlaskClient):
+    response = client.get('/book/')
+    assert response.status_code == 404
+
+    response = client.get('/book/CompetitionA/')
+    assert response.status_code == 404
+
+    response = client.get('/book//ClubA')
+    assert response.status_code == 404
